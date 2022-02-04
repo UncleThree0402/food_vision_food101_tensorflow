@@ -1,11 +1,13 @@
-# Food 101 Image 
+# Food 101 Image
 
 ## Dataset
+
 Food101 From tensorflow_datasets
 
 ### Import Dataset
 
 [`dateset_load`](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/dataset_load.py)
+
 ```python
 import tensorflow_datasets as tfds
 
@@ -21,11 +23,13 @@ print("food101" in dataset_list)
                                              with_info=True,
                                              data_dir="../Dataset")
 ```
+
 > Data are shuffled while loading in
 
 ### Preprocess
 
 #### Check Data Shape & Info
+
 ```python
 # Print features
 print(ds_info.features)
@@ -37,6 +41,7 @@ class_names = ds_info.features["label"].names
 > We can know that datatype and shape is not we want.
 
 #### Plot random image
+
 ```python
 # Plot Random Image
 plt.figure(figsize=(15, 15))
@@ -56,12 +61,16 @@ for i, data in enumerate(train_data.take(9)):
 plt.show()
 ```
 
-![random_image_before_preprocess]()
+![random_image_before_preprocess](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/ribp.png)
 
 #### Preprocess Function
-[`tools/data_processing`]()
+
+[`tools/data_processing`](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/tools/data_processing.py)
+
 ##### Function
+
 We need to resize and cast datatype to float datatype.
+
 ```python
 def raw_data_processing(image, label, image_shape=224):
     # Resize
@@ -72,6 +81,7 @@ def raw_data_processing(image, label, image_shape=224):
 ```
 
 ##### Test
+
 ```python
 # Preprocess data
 for image, label in train_data.take(1):
@@ -79,14 +89,12 @@ for image, label in train_data.take(1):
     print(preprocessed_data)
 ```
 
-```shell
-
-```
-
 #### Batch & Finish
-[`tools/batch_prefetch`]()
+
+[`tools/data_processing`](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/tools/data_processing.py)
 
 ##### Function
+
 ```python
 def batch_prefetch(train_data, test_data):
     train_data = train_data.map(map_func=raw_data_processing, num_parallel_calls=tf.data.AUTOTUNE)
@@ -103,6 +111,7 @@ train_data, test_data = data_processing.batch_prefetch(train_data, test_data)
 ```
 
 ##### Test
+
 ```python
 processed_train_data = train_data.unbatch()
 
@@ -122,11 +131,12 @@ for i, data in enumerate(processed_train_data.take(9)):
 plt.show()
 ```
 
-![random_image_after_preprocess]()
+![random_image_after_preprocess](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/riap.png)
 
 ## Model
 
 ### Description
+
 In this model we will use transfer learning with EfficientNetB0.
 
 ### Base Model Layer
@@ -142,13 +152,16 @@ for i, layer in enumerate(base_model.layers):
 ```
 
 ### Input Layer
+
 ```python
 # Input
 inputs = tf.keras.layers.Input(shape=(224, 224, 3), name="input_layer")
 ```
+
 > EfficientNetB0 are built for size 224
 
 ### Augmentation Layer
+
 ```python
 # Augmentation
 augmentation = tf.keras.Sequential([
@@ -161,7 +174,9 @@ augmentation = tf.keras.Sequential([
 ```
 
 ### baseline_model
+
 > Functional Layers are used
+
 ```python
 # Baseline model
 x = augmentation(inputs)
@@ -184,7 +199,11 @@ history_0 = model_0.fit(train_data,
                                    callbacks.create_model_checkpoint("baseline_model")])
 ```
 
+![loss_b](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Baseline%20Model%20_loss.png)
+![accuracy_b](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Baseline%20Model%20_accuracy.png)
+
 ### Fine Tuning
+
 I unfreeze all feature extractor layer, decrease learning fom 0.001 to 0.00005.
 
 ```python
@@ -209,8 +228,24 @@ history_1 = model_0.fit(train_data,
                                    callbacks.create_early_stopping("val_accuracy", 5)])
 ```
 
+![loss_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Model%201%20_loss.png)
+![accuracy_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Model%201%20_accuracy.png)
+
 ### Result
+
 | Model      | Accuracy |
 |------------|----------|
 | Base Model | 66.76%   |
 | Fine Tuned | 75.19    |
+
+#### Base Model
+
+![f1_b](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_0_f1-score.png)
+![precision_b](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_0_precision.png)
+![recall_b](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_0_recall.png)
+
+#### Fine Tune 1
+
+![f1_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_f1-score.png)
+![precision_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_precision.png)
+![recall_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_recall.png)
