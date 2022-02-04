@@ -100,6 +100,7 @@ history_0 = model_0.fit(train_data,
                         callbacks=[callbacks.create_tensorboard_callback("food101", "baseline_model"),
                                    callbacks.create_model_checkpoint("baseline_model")])
 
+model_0.load_weights("baseline_model/checkpoint.ckpt")
 result_0 = model_0.evaluate(test_data)
 
 model_0.save("./models/model_0.h5", save_format='h5')
@@ -127,7 +128,7 @@ model_0.load_weights("baseline_model/checkpoint.ckpt")
 base_model.trainable = True
 
 model_0.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-                optimizer=tf.keras.optimizers.Adam(learning_rate=0.00005),
+                optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
                 metrics=["accuracy"])
 
 history_1 = model_0.fit(train_data,
@@ -138,8 +139,9 @@ history_1 = model_0.fit(train_data,
                         validation_steps=int(0.15 * len(test_data)),
                         callbacks=[callbacks.create_tensorboard_callback("food101", "model_1"),
                                    callbacks.create_model_checkpoint("model_1"),
-                                   callbacks.create_early_stopping("val_accuracy", 5)])
+                                   callbacks.create_early_stopping("val_accuracy", 3)])
 
+model_0.load_weights("model_1/checkpoint.ckpt")
 result_1 = model_0.evaluate(test_data)
 
 model_0.save("./models/model_1.h5", save_format='h5')
@@ -156,5 +158,42 @@ plot_graph.plot_confusion_matrix(y_true=y_labels, y_preds=pred_classes, name="mo
 
 plot_graph.plot_classification_report(y_true=y_labels, y_pred=pred_classes, name="model_1", class_names=class_names)
 
+# model_2
+model_0.load_weights("model_1/checkpoint.ckpt")
+
+base_model.trainable = True
+
+model_0.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+                optimizer=tf.keras.optimizers.Adam(learning_rate=0.00001),
+                metrics=["accuracy"])
+
+history_2 = model_0.fit(train_data,
+                        epochs=100,
+                        initial_epoch=history_1.epoch[-1],
+                        steps_per_epoch=len(train_data),
+                        validation_data=test_data,
+                        validation_steps=int(0.15 * len(test_data)),
+                        callbacks=[callbacks.create_tensorboard_callback("food101", "model_2"),
+                                   callbacks.create_model_checkpoint("model_2"),
+                                   callbacks.create_early_stopping("val_accuracy", 3)])
+
+model_0.load_weights("model_2/checkpoint.ckpt")
+result_2 = model_0.evaluate(test_data)
+
+model_0.save("./models/model_2.h5", save_format='h5')
+
+plot_graph.plot_loss_curves(history_1, "Model 2 ")
+plot_graph.plot_accuracy_curves(history_1, "Model 2 ")
+
+pred_probs = model_0.predict(test_data, verbose=1)
+
+y_labels, pred_classes = data_processing.create_y_labels_y_pred(pred_probs=pred_probs, test_data=test_data)
+
+plot_graph.plot_confusion_matrix(y_true=y_labels, y_preds=pred_classes, name="model_2", classes=class_names,
+                                 figsize=(100, 100), text_size=20)
+
+plot_graph.plot_classification_report(y_true=y_labels, y_pred=pred_classes, name="model_2", class_names=class_names)
+
 print(f"Result 0 : {result_0}")
 print(f"Result 1 : {result_1}")
+print(f"Result 2 : {result_2}")

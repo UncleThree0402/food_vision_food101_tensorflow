@@ -5,7 +5,7 @@ Food101 From tensorflow_datasets
 
 ### Import Dataset
 
-[`dateset_load`]()
+[`dateset_load`](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/dataset_load.py)
 ```python
 import tensorflow_datasets as tfds
 
@@ -32,10 +32,6 @@ print(ds_info.features)
 
 # Extract Class name
 class_names = ds_info.features["label"].names
-```
-
-```shell
-
 ```
 
 > We can know that datatype and shape is not we want.
