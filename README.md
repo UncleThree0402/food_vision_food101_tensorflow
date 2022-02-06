@@ -38,6 +38,13 @@ print(ds_info.features)
 class_names = ds_info.features["label"].names
 ```
 
+```shell
+FeaturesDict({
+    'image': Image(shape=(None, None, 3), dtype=tf.uint8),
+    'label': ClassLabel(shape=(), dtype=tf.int64, num_classes=101),
+})
+```
+
 > We can know that datatype and shape is not we want.
 
 #### Plot random image
@@ -59,6 +66,18 @@ for i, data in enumerate(train_data.take(9)):
     plt.title(class_names[label.numpy()])
     plt.axis(False)
 plt.show()
+```
+
+```shell
+i : 0,Shape of image : (512, 512, 3),Dtype of image : <dtype: 'uint8'>,Label of image : 77,Class name of image : pork_chop
+i : 1,Shape of image : (512, 512, 3),Dtype of image : <dtype: 'uint8'>,Label of image : 11,Class name of image : caesar_salad
+i : 2,Shape of image : (512, 512, 3),Dtype of image : <dtype: 'uint8'>,Label of image : 96,Class name of image : tacos
+i : 3,Shape of image : (512, 512, 3),Dtype of image : <dtype: 'uint8'>,Label of image : 100,Class name of image : waffles
+i : 4,Shape of image : (342, 512, 3),Dtype of image : <dtype: 'uint8'>,Label of image : 18,Class name of image : chicken_curry
+i : 5,Shape of image : (512, 512, 3),Dtype of image : <dtype: 'uint8'>,Label of image : 59,Class name of image : lasagna
+i : 6,Shape of image : (512, 512, 3),Dtype of image : <dtype: 'uint8'>,Label of image : 80,Class name of image : pulled_pork_sandwich
+i : 7,Shape of image : (512, 512, 3),Dtype of image : <dtype: 'uint8'>,Label of image : 76,Class name of image : pizza
+i : 8,Shape of image : (384, 512, 3),Dtype of image : <dtype: 'uint8'>,Label of image : 22,Class name of image : chocolate_mousse
 ```
 
 ![random_image_before_preprocess](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/ribp.png)
@@ -129,6 +148,18 @@ for i, data in enumerate(processed_train_data.take(9)):
     plt.title(class_names[label.numpy()])
     plt.axis(False)
 plt.show()
+```
+
+```shell
+i : 0,Shape of image : (224, 224, 3),Dtype of image : <dtype: 'float32'>,Label of image : 82,Class name of image : ravioli
+i : 1,Shape of image : (224, 224, 3),Dtype of image : <dtype: 'float32'>,Label of image : 73,Class name of image : panna_cotta
+i : 2,Shape of image : (224, 224, 3),Dtype of image : <dtype: 'float32'>,Label of image : 77,Class name of image : pork_chop
+i : 3,Shape of image : (224, 224, 3),Dtype of image : <dtype: 'float32'>,Label of image : 88,Class name of image : seaweed_salad
+i : 4,Shape of image : (224, 224, 3),Dtype of image : <dtype: 'float32'>,Label of image : 79,Class name of image : prime_rib
+i : 5,Shape of image : (224, 224, 3),Dtype of image : <dtype: 'float32'>,Label of image : 9,Class name of image : breakfast_burrito
+i : 6,Shape of image : (224, 224, 3),Dtype of image : <dtype: 'float32'>,Label of image : 25,Class name of image : club_sandwich
+i : 7,Shape of image : (224, 224, 3),Dtype of image : <dtype: 'float32'>,Label of image : 23,Class name of image : churros
+i : 8,Shape of image : (224, 224, 3),Dtype of image : <dtype: 'float32'>,Label of image : 48,Class name of image : greek_salad
 ```
 
 ![random_image_after_preprocess](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/riap.png)
@@ -202,19 +233,18 @@ history_0 = model_0.fit(train_data,
 ![loss_b](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Baseline%20Model%20_loss.png)
 ![accuracy_b](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Baseline%20Model%20_accuracy.png)
 
-### Fine Tuning
+### Fine-Tuning Step One
 
-I unfreeze all feature extractor layer, decrease learning fom 0.001 to 0.00005.
+I unfreeze all feature extractor layer, decrease learning from 0.001 to 0.0001.
 
 ```python
-# Load best model state
+# model_1
 model_0.load_weights("baseline_model/checkpoint.ckpt")
 
-# Unfreeze
 base_model.trainable = True
 
 model_0.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-                optimizer=tf.keras.optimizers.Adam(learning_rate=0.00005),
+                optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
                 metrics=["accuracy"])
 
 history_1 = model_0.fit(train_data,
@@ -225,7 +255,35 @@ history_1 = model_0.fit(train_data,
                         validation_steps=int(0.15 * len(test_data)),
                         callbacks=[callbacks.create_tensorboard_callback("food101", "model_1"),
                                    callbacks.create_model_checkpoint("model_1"),
-                                   callbacks.create_early_stopping("val_accuracy", 5)])
+                                   callbacks.create_early_stopping("val_accuracy", 3)])
+```
+
+![loss_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Model%201%20_loss.png)
+![accuracy_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Model%201%20_accuracy.png)
+
+### Fine-Tuning Step Two
+
+I unfreeze all feature extractor layer, decrease learning from 0.0001 to 0.00001.
+
+```python
+# model_2
+model_0.load_weights("model_1/checkpoint.ckpt")
+
+base_model.trainable = True
+
+model_0.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+                optimizer=tf.keras.optimizers.Adam(learning_rate=0.00001),
+                metrics=["accuracy"])
+
+history_2 = model_0.fit(train_data,
+                        epochs=100,
+                        initial_epoch=history_1.epoch[-1],
+                        steps_per_epoch=len(train_data),
+                        validation_data=test_data,
+                        validation_steps=int(0.15 * len(test_data)),
+                        callbacks=[callbacks.create_tensorboard_callback("food101", "model_2"),
+                                   callbacks.create_model_checkpoint("model_2"),
+                                   callbacks.create_early_stopping("val_accuracy", 3)])
 ```
 
 ![loss_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Model%201%20_loss.png)
@@ -233,10 +291,11 @@ history_1 = model_0.fit(train_data,
 
 ### Result
 
-| Model      | Accuracy |
-|------------|----------|
-| Base Model | 66.76%   |
-| Fine Tuned | 75.19    |
+| Model               | Accuracy |
+|---------------------|----------|
+| Base Model          | 67.44%   |
+| Fine Tuned Step One | 75.28%   |
+| Fine Tuned Step Two | 77.51%   |
 
 #### Base Model
 
@@ -249,3 +308,9 @@ history_1 = model_0.fit(train_data,
 ![f1_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_f1-score.png)
 ![precision_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_precision.png)
 ![recall_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_recall.png)
+
+#### Fine Tune 2
+
+![f1_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_f1-score.png)
+![precision_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_precision.png)
+![recall_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_recall.png)
