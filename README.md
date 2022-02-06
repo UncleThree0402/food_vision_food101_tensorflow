@@ -286,8 +286,8 @@ history_2 = model_0.fit(train_data,
                                    callbacks.create_early_stopping("val_accuracy", 3)])
 ```
 
-![loss_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Model%201%20_loss.png)
-![accuracy_1](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Model%201%20_accuracy.png)
+![loss_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Model%202%20_loss.png)
+![accuracy_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/Model%202%20_accuracy.png)
 
 ### Result
 
@@ -311,6 +311,6 @@ history_2 = model_0.fit(train_data,
 
 #### Fine Tune 2
 
-![f1_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_f1-score.png)
-![precision_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_precision.png)
-![recall_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_1_recall.png)
+![f1_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_2_f1-score.png)
+![precision_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_2_precision.png)
+![recall_2](https://github.com/UncleThree0402/food_vision_food101_tensorflow/blob/master/Image/model_2_recall.png)
